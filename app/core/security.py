@@ -2,9 +2,14 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
 import jwt
+import bcrypt
 from passlib.context import CryptContext
 
 from app.core.config import get_settings
+
+# Some minimal bcrypt builds (e.g., on serverless) miss __about__; patch to keep passlib happy.
+if not hasattr(bcrypt, "__about__"):
+    bcrypt.__about__ = type("about", (), {"__version__": getattr(bcrypt, "__version__", "0")})
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 settings = get_settings()
