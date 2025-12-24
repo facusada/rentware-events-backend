@@ -15,23 +15,39 @@ router = APIRouter(prefix="/cart", tags=["cart"])
 
 async def _resolve_cart(db: AsyncSession, session_token: str | None, user: User | None) -> Cart:
     cart = None
+    session_cart = None
+    user_cart = None
+
+    if session_token:
+        session_cart = await cart_service.get_cart_by_session(db, session_token)
+        if session_cart and user and session_cart.user_id is None:
+            session_cart.user_id = user.id
+            await db.commit()
+            await db.refresh(session_cart)
+
     if user:
-        result = await db.execute(select(Cart).where(Cart.user_id == user.id))
-        cart = result.scalars().first()
-        if not cart and session_token:
-            existing = await cart_service.get_cart_by_session(db, session_token)
-            if existing:
-                existing.user_id = user.id
-                await db.commit()
-                await db.refresh(existing)
-                cart = existing
-    if not cart and session_token:
-        cart = await cart_service.get_cart_by_session(db, session_token)
+        result = await db.execute(select(Cart).options(selectinload(Cart.order)).where(Cart.user_id == user.id))
+        user_cart = result.scalars().first()
+
+    if session_cart:
+        cart = session_cart
+    elif user_cart:
+        # Si el carrito del usuario ya generó un pedido y el token de sesión cambió, evita reusarlo
+        if user_cart.order and session_token and user_cart.session_token != session_token:
+            cart = None
+        else:
+            cart = user_cart
+
     if not cart and session_token:
         cart = await cart_service.create_cart(db, session_token, user.id if user else None)
+
+    if not cart and user_cart:
+        cart = user_cart
+
     if not cart:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cart not found")
-    result = await db.execute(select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart.id))
+
+    result = await db.execute(select(Cart).options(selectinload(Cart.items), selectinload(Cart.order)).where(Cart.id == cart.id))
     return result.scalars().unique().first()
 
 

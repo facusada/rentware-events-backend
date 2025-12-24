@@ -20,12 +20,12 @@ def calculate_days(event_start: Optional[date], event_end: Optional[date], fallb
 
 
 async def get_cart_by_session(db: AsyncSession, session_token: str) -> Cart | None:
-    result = await db.execute(select(Cart).options(selectinload(Cart.items)).where(Cart.session_token == session_token))
+    result = await db.execute(select(Cart).options(selectinload(Cart.items), selectinload(Cart.order)).where(Cart.session_token == session_token))
     return result.scalars().first()
 
 
 async def get_cart_by_id(db: AsyncSession, cart_id: uuid.UUID) -> Cart | None:
-    result = await db.execute(select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id))
+    result = await db.execute(select(Cart).options(selectinload(Cart.items), selectinload(Cart.order)).where(Cart.id == cart_id))
     return result.scalars().first()
 
 

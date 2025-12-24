@@ -6,6 +6,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from app.models.shared import DeliveryMethod
+from app.models.order import OrderStatus
 
 
 class CartBase(BaseModel):
@@ -57,5 +58,7 @@ class CartOut(CartBase):
     id: uuid.UUID
     session_token: str
     items: List[CartItemOut] = []
+    order_id: uuid.UUID | None = None
+    order_status: OrderStatus | None = None
 
     model_config = {"from_attributes": True}

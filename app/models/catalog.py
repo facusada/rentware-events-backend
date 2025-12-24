@@ -48,7 +48,7 @@ class Product(Base):
     units_per_box: Mapped[int] = mapped_column(Integer, default=1)
     piece_type: Mapped[str | None] = mapped_column(String(100))
     condition_status: Mapped[str | None] = mapped_column(String(100))
-    photo_url: Mapped[str | None] = mapped_column(String(255))
+    photo_url: Mapped[str | None] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 

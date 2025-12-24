@@ -29,6 +29,14 @@ class Cart(Base):
     items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
     order = relationship("Order", back_populates="cart", uselist=False)
 
+    @property
+    def order_id(self):
+        return getattr(self.order, "id", None)
+
+    @property
+    def order_status(self):
+        return getattr(self.order, "status", None)
+
 
 class CartItem(Base):
     __tablename__ = "cart_items"

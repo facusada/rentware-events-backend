@@ -47,7 +47,7 @@ async def create_product(db: AsyncSession, payload: ProductCreate) -> Product:
         tags = await db.execute(select(Tag).where(Tag.id.in_(payload.tag_ids)))
         product.tags = list(tags.scalars())
     await db.commit()
-    await db.refresh(product)
+    await db.refresh(product, attribute_names=["variants", "tags"])
     return product
 
 
@@ -67,7 +67,7 @@ async def update_product(db: AsyncSession, product: Product, payload: ProductUpd
             continue
         setattr(product, field, value)
     await db.commit()
-    await db.refresh(product)
+    await db.refresh(product, attribute_names=["variants", "tags"])
     return product
 
 
