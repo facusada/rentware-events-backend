@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import api_router
 from app.core.config import get_settings
+from app.seed.seed_data import seed
 
 settings = get_settings()
 
@@ -18,6 +19,12 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
+
+
+@app.on_event("startup")
+async def ensure_seed():
+    # Idempotent bootstrap for default users/data so login works after deploy
+    await seed()
 
 
 @app.get("/")
