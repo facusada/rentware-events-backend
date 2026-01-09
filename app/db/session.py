@@ -4,7 +4,12 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(str(settings.database_url), echo=False, future=True)
+engine = create_async_engine(
+    str(settings.database_url),
+    echo=False,
+    future=True,
+    connect_args={"statement_cache_size": 0},
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, autoflush=False)
 
 
